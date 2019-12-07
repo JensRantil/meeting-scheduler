@@ -33,7 +33,7 @@ func TestOptimalSolutionEvaluation(t *testing.T) {
 		{"christian", emptyCalendar},
 		{"jens", emptyCalendar},
 	}
-	reqs := []ScheduleRequest{
+	reqs := []*ScheduleRequest{
 		{60 * time.Minute, attendees, rooms},
 	}
 
@@ -68,7 +68,7 @@ func TestPuttingEventsEarlierInTheWeekIsBetter(t *testing.T) {
 	attendee1 := Attendee{"christian", emptyCalendar}
 	attendee2 := Attendee{"jens", emptyCalendar}
 	attendee3 := Attendee{"henrik", emptyCalendar}
-	reqs := []ScheduleRequest{
+	reqs := []*ScheduleRequest{
 		{60 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
 		{30 * time.Minute, []Attendee{attendee1, attendee2, attendee3}, rooms},
 	}
@@ -111,7 +111,7 @@ func TestFragmentedDayIsWorseThanNonFragmentedDay(t *testing.T) {
 	attendee3 := Attendee{"c", emptyCalendar}
 	attendee4 := Attendee{"d", emptyCalendar}
 	attendee5 := Attendee{"e", emptyCalendar}
-	reqs := []ScheduleRequest{
+	reqs := []*ScheduleRequest{
 		{60 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
 		{60 * time.Minute, []Attendee{attendee5, attendee1}, rooms},
 		{60 * time.Minute, []Attendee{attendee3, attendee4}, rooms},
@@ -147,7 +147,7 @@ func TestSchedulingOfSolution(t *testing.T) {
 	attendee3 := Attendee{"c", emptyCalendar}
 	attendee4 := Attendee{"d", emptyCalendar}
 	attendee5 := Attendee{"e", emptyCalendar}
-	reqs := []ScheduleRequest{
+	reqs := []*ScheduleRequest{
 		{15 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
 		{60 * time.Minute, []Attendee{attendee5, attendee1}, rooms},
 		{30 * time.Minute, []Attendee{attendee3, attendee4}, rooms},

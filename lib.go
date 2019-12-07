@@ -43,7 +43,7 @@ type ScheduledEvent struct {
 	TimeInterval
 	Attendees []Attendee
 	Room      Room
-	Request   ScheduleRequest
+	Request   *ScheduleRequest
 }
 
 type ScheduleRequest struct {
@@ -78,7 +78,7 @@ func NGenerations(ngenerations uint) Config {
 	}
 }
 
-func New(earliest time.Time, reqs []ScheduleRequest, options ...Config) (*Scheduler, error) {
+func New(earliest time.Time, reqs []*ScheduleRequest, options ...Config) (*Scheduler, error) {
 	s := Scheduler{
 		DefaultNGenerations,
 		earliest,
@@ -93,7 +93,7 @@ func New(earliest time.Time, reqs []ScheduleRequest, options ...Config) (*Schedu
 type Scheduler struct {
 	ngenerations uint
 	earliest     time.Time
-	reqs         []ScheduleRequest
+	reqs         []*ScheduleRequest
 }
 
 func (s *Scheduler) Run() ([]ScheduledEvent, error) {
@@ -148,7 +148,7 @@ func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
 
 type solution struct {
 	earliest time.Time
-	reqs     []ScheduleRequest
+	reqs     []*ScheduleRequest
 
 	// This is the order we are optimizing for. We could in theory really
 	// reorder reqs, but since eaopt requires that slices's interface{} content
@@ -193,7 +193,7 @@ type constructedSchedule struct {
 
 const MaxIterations = 1000
 
-func (c *constructedSchedule) Add(req ScheduleRequest) error {
+func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 	candidate := ScheduledEvent{
 		TimeInterval: TimeInterval{
 			c.earliest,
@@ -220,7 +220,7 @@ func (c *constructedSchedule) Add(req ScheduleRequest) error {
 		// cost for switching room or cost for using a large room with few
 		// people.
 		busyRooms, nextTimeToTry := c.findAlreadyScheduledRooms(candidate.TimeInterval)
-		room, found, err := c.findAvailableRoom(candidate, req, busyRooms)
+		room, found, err := c.findAvailableRoom(candidate, *req, busyRooms)
 		if err != nil {
 			return err
 		}
