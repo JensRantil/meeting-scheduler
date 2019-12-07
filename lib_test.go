@@ -101,6 +101,41 @@ func TestPuttingEventsEarlierInTheWeekIsBetter(t *testing.T) {
 		checkEvent(t, event)
 	}
 }
+func TestFragmentedDayIsWorseThanNonFragmentedDay(t *testing.T) {
+	emptyCalendar := FakeCalendar{}
+	rooms := []Room{
+		{"room-1", emptyCalendar},
+	}
+	attendee1 := Attendee{"a", emptyCalendar}
+	attendee2 := Attendee{"b", emptyCalendar}
+	attendee3 := Attendee{"c", emptyCalendar}
+	attendee4 := Attendee{"d", emptyCalendar}
+	attendee5 := Attendee{"e", emptyCalendar}
+	reqs := []ScheduleRequest{
+		{60 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
+		{60 * time.Minute, []Attendee{attendee5, attendee1}, rooms},
+		{60 * time.Minute, []Attendee{attendee3, attendee4}, rooms},
+	}
+
+	// Monday morning at 9.
+	now, _ := time.Parse("02-01-2006 15:04", "02-12-2019 09:00")
+
+	better := solution{now, reqs, []int{0, 1, 2}}
+	worse := solution{now, reqs, []int{0, 2, 1}}
+
+	betterSchedule, err := better.Schedule()
+	if err != nil {
+		t.Fatal(err)
+	}
+	worseSchedule, err := worse.Schedule()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if w, b := worseSchedule.Evaluate(), betterSchedule.Evaluate(); w < b {
+		t.Error("A fragmented schedule performed better than a non-fragmented one. W:", w, "B:", b)
+	}
+}
 
 func TestSchedulingOfSolution(t *testing.T) {
 	emptyCalendar := FakeCalendar{}
