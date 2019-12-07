@@ -141,15 +141,15 @@ func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
 		order[i], order[j] = order[j], order[i]
 	})
 	return &solution{
-		c,
+		c.earliest,
 		c.reqs,
 		order,
 	}
 }
 
 type solution struct {
-	scheduler *Scheduler
-	reqs      []ScheduleRequest
+	earliest time.Time
+	reqs     []ScheduleRequest
 
 	// This is the order we are optimizing for. We could in theory really
 	// reorder reqs, but since eaopt requires that slices's interface{} content
@@ -159,7 +159,7 @@ type solution struct {
 
 func (s *solution) Clone() eaopt.Genome {
 	return &solution{
-		s.scheduler,
+		s.earliest,
 		s.reqs,
 		append([]int(nil), s.order...),
 	}
@@ -188,7 +188,7 @@ type attendeeEvents struct {
 
 type constructedSchedule struct {
 	Events           []ScheduledEvent
-	scheduler        *Scheduler
+	earliest         time.Time
 	eventsByAttendee map[AttendeeId]*attendeeEvents
 }
 
@@ -197,8 +197,8 @@ const MaxIterations = 1000
 func (c *constructedSchedule) Add(req ScheduleRequest) error {
 	candidate := ScheduledEvent{
 		TimeInterval: TimeInterval{
-			c.scheduler.earliest,
-			c.scheduler.earliest.Add(req.Length),
+			c.earliest,
+			c.earliest.Add(req.Length),
 		},
 		Attendees: req.Attendees,
 		Request:   req,
@@ -342,7 +342,7 @@ func (c constructedSchedule) Evaluate() float64 {
 	var score time.Duration
 	for _, attendee := range c.eventsByAttendee {
 		// First event as early as possible.
-		score += attendee.Scheduled[0].Start.Sub(c.scheduler.earliest)
+		score += attendee.Scheduled[0].Start.Sub(c.earliest)
 
 		// All events packed as tight as possible.
 		for i, nextEvent := range attendee.Scheduled[1:] {
@@ -357,7 +357,7 @@ func (c constructedSchedule) Evaluate() float64 {
 
 func (s *solution) Schedule() (constructedSchedule, error) {
 	sch := constructedSchedule{
-		scheduler:        s.scheduler,
+		earliest:         s.earliest,
 		eventsByAttendee: make(map[AttendeeId]*attendeeEvents),
 	}
 	for _, event := range s.order {
