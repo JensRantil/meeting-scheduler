@@ -102,6 +102,59 @@ func TestPuttingEventsEarlierInTheWeekIsBetter(t *testing.T) {
 	}
 }
 
+func TestSchedulingOfSolution(t *testing.T) {
+	emptyCalendar := FakeCalendar{}
+	rooms := []Room{
+		{"room-1", emptyCalendar},
+	}
+	pauseTime := 5 * time.Minute
+	attendee1 := Attendee{"a", emptyCalendar, pauseTime}
+	attendee2 := Attendee{"b", emptyCalendar, pauseTime}
+	attendee3 := Attendee{"c", emptyCalendar, pauseTime}
+	attendee4 := Attendee{"d", emptyCalendar, pauseTime}
+	attendee5 := Attendee{"e", emptyCalendar, pauseTime}
+	reqs := []ScheduleRequest{
+		{15 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
+		{60 * time.Minute, []Attendee{attendee5, attendee1}, rooms},
+		{30 * time.Minute, []Attendee{attendee3, attendee4}, rooms},
+	}
+
+	// Monday morning at 9.
+	now, _ := time.Parse("02-01-2006 15:04", "02-12-2019 09:00")
+
+	sol := solution{
+		now,
+		reqs,
+		[]int{0, 1, 2},
+	}
+
+	schedule, err := sol.Schedule()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := []TimeInterval{
+		{
+			now,
+			now.Add(reqs[0].Length),
+		},
+		{
+			now.Add(reqs[0].Length).Add(pauseTime),
+			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(pauseTime),
+		},
+		{
+			// Not adding any additional pause time here because attendee 3 & 4
+			// didn't have a meeting previously.
+			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(pauseTime),
+			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(reqs[2].Length).Add(pauseTime),
+		},
+	}
+	for i, e := range expected {
+		if schedule.Events[i].TimeInterval != e {
+			t.Errorf("Unexpected event on index %d.\nExpected:\n%s\nWas:\n%s", i, pp.Sprint(e), pp.Sprint(schedule.Events[i].TimeInterval))
+		}
+	}
+}
+
 func checkEvent(t *testing.T, event ScheduledEvent) {
 	if diff := event.End.Sub(event.Start); diff != event.Request.Length {
 		t.Error("Wrong event length. Expected:", event.Request.Length, "Was:", diff)

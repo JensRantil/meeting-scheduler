@@ -115,6 +115,8 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 		fmt.Printf("Best fitness at generation %d: %f\n", ga.Generations, ga.HallOfFame[0].Fitness)
 	}*/
 
+	// TODO: Stop early if no progress is being made.
+
 	// Find the minimum
 	err = ga.Minimize(s.ScheduleFactory)
 	if err != nil {
