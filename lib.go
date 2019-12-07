@@ -14,9 +14,6 @@ type Attendee struct {
 	Id AttendeeId
 
 	Calendar Calendar
-
-	// The time the attendee prefers to take a pause between meetings.
-	ExpectedPause time.Duration
 }
 
 type TimeInterval struct {
@@ -209,12 +206,12 @@ func (c *constructedSchedule) Add(req ScheduleRequest) error {
 	iterations := 0
 	for {
 		// TODO: Attendee already has meeting better name?
-		overlap, attendee, overlaps, err := c.findAttendeeOverlap(candidate)
+		overlap, overlaps, err := c.findAttendeeOverlap(candidate)
 		if err != nil {
 			return err
 		}
 		if overlaps {
-			candidate.Start = overlap.End.Add(attendee.ExpectedPause)
+			candidate.Start = overlap.End
 			candidate.End = candidate.Start.Add(req.Length)
 			continue
 		}
@@ -303,17 +300,17 @@ func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, req ScheduleR
 	return nil, false, nil
 }
 
-func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarEvent, *Attendee, bool, error) {
+func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarEvent, bool, error) {
 
 	// Now we check if the user already has a meeting.
 
 	for _, a := range se.Attendees {
 		ev, overlaps, err := a.Calendar.Overlap(se.TimeInterval)
 		if err != nil {
-			return nil, nil, false, err
+			return nil, false, err
 		}
 		if overlaps {
-			return ev, &a, true, nil
+			return ev, true, nil
 		}
 
 		if _, exist := c.eventsByAttendee[a.Id]; exist {
@@ -323,12 +320,12 @@ func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarE
 				// scheduled.End.Before(se.Start) we can stop iterating.
 
 				if scheduled.TimeInterval.Overlaps(se.TimeInterval) {
-					return &CalendarEvent{scheduled.TimeInterval}, &a, true, nil
+					return &CalendarEvent{scheduled.TimeInterval}, true, nil
 				}
 			}
 		}
 	}
-	return nil, nil, false, nil
+	return nil, false, nil
 }
 
 func latest(a time.Time, others ...time.Time) time.Time {
@@ -349,7 +346,7 @@ func (c constructedSchedule) Evaluate() float64 {
 		// All events packed as tight as possible.
 		for i, nextEvent := range attendee.Scheduled[1:] {
 			curEvent := attendee.Scheduled[i]
-			score += nextEvent.Start.Sub(curEvent.End) - attendee.Attendee.ExpectedPause
+			score += nextEvent.Start.Sub(curEvent.End)
 		}
 	}
 

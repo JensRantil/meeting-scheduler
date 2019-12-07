@@ -30,8 +30,8 @@ func TestOptimalSolutionEvaluation(t *testing.T) {
 		{"room-1", emptyCalendar},
 	}
 	attendees := []Attendee{
-		{"christian", emptyCalendar, 5 * time.Minute},
-		{"jens", emptyCalendar, 5 * time.Minute},
+		{"christian", emptyCalendar},
+		{"jens", emptyCalendar},
 	}
 	reqs := []ScheduleRequest{
 		{60 * time.Minute, attendees, rooms},
@@ -65,9 +65,9 @@ func TestPuttingEventsEarlierInTheWeekIsBetter(t *testing.T) {
 	rooms := []Room{
 		{"room-1", emptyCalendar},
 	}
-	attendee1 := Attendee{"christian", emptyCalendar, 5 * time.Minute}
-	attendee2 := Attendee{"jens", emptyCalendar, 5 * time.Minute}
-	attendee3 := Attendee{"henrik", emptyCalendar, 5 * time.Minute}
+	attendee1 := Attendee{"christian", emptyCalendar}
+	attendee2 := Attendee{"jens", emptyCalendar}
+	attendee3 := Attendee{"henrik", emptyCalendar}
 	reqs := []ScheduleRequest{
 		{60 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
 		{30 * time.Minute, []Attendee{attendee1, attendee2, attendee3}, rooms},
@@ -107,12 +107,11 @@ func TestSchedulingOfSolution(t *testing.T) {
 	rooms := []Room{
 		{"room-1", emptyCalendar},
 	}
-	pauseTime := 5 * time.Minute
-	attendee1 := Attendee{"a", emptyCalendar, pauseTime}
-	attendee2 := Attendee{"b", emptyCalendar, pauseTime}
-	attendee3 := Attendee{"c", emptyCalendar, pauseTime}
-	attendee4 := Attendee{"d", emptyCalendar, pauseTime}
-	attendee5 := Attendee{"e", emptyCalendar, pauseTime}
+	attendee1 := Attendee{"a", emptyCalendar}
+	attendee2 := Attendee{"b", emptyCalendar}
+	attendee3 := Attendee{"c", emptyCalendar}
+	attendee4 := Attendee{"d", emptyCalendar}
+	attendee5 := Attendee{"e", emptyCalendar}
 	reqs := []ScheduleRequest{
 		{15 * time.Minute, []Attendee{attendee1, attendee2}, rooms},
 		{60 * time.Minute, []Attendee{attendee5, attendee1}, rooms},
@@ -138,14 +137,14 @@ func TestSchedulingOfSolution(t *testing.T) {
 			now.Add(reqs[0].Length),
 		},
 		{
-			now.Add(reqs[0].Length).Add(pauseTime),
-			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(pauseTime),
+			now.Add(reqs[0].Length),
+			now.Add(reqs[0].Length).Add(reqs[1].Length),
 		},
 		{
 			// Not adding any additional pause time here because attendee 3 & 4
 			// didn't have a meeting previously.
-			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(pauseTime),
-			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(reqs[2].Length).Add(pauseTime),
+			now.Add(reqs[0].Length).Add(reqs[1].Length),
+			now.Add(reqs[0].Length).Add(reqs[1].Length).Add(reqs[2].Length),
 		},
 	}
 	for i, e := range expected {
