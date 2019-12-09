@@ -33,7 +33,7 @@ type AttendeeID string
 // Attendee is an attendee that attends a meeting.
 type Attendee struct {
 	// Id is the unique identifier for an attendee.
-	Id AttendeeID
+	ID AttendeeID
 	// Calendar is an instance of the attendee's calendar containing previously
 	// scheduled meetings.
 	Calendar Calendar
@@ -110,7 +110,7 @@ type RoomId string
 type Room struct {
 	// Is is a unique id for a room. It is mostly needed to be able to work
 	// around the fact that Room isn't hashable and can't be stored in a map.
-	Id RoomId
+	ID RoomId
 	// Calendar is the calendar of the room.
 	Calendar Calendar
 }
@@ -323,12 +323,12 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 
 	c.Events = append(c.Events, candidate)
 	for _, a := range req.Attendees {
-		e, exists := c.eventsByAttendee[a.Id]
+		e, exists := c.eventsByAttendee[a.ID]
 		if !exists {
 			e = &attendeeEvents{
 				Attendee: a,
 			}
-			c.eventsByAttendee[a.Id] = e
+			c.eventsByAttendee[a.ID] = e
 		}
 		e.Scheduled = append(e.Scheduled, candidate)
 	}
@@ -350,7 +350,7 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 			if earliestEnd == nil || event.End.Before(*earliestEnd) {
 				earliestEnd = &event.End
 			}
-			m[event.Room.Id] = event.Room
+			m[event.Room.ID] = event.Room
 		}
 	}
 
@@ -366,11 +366,11 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Room) (*Room, bool, error) {
 	lookup := make(map[RoomId]struct{})
 	for _, r := range excluded {
-		lookup[r.Id] = struct{}{}
+		lookup[r.ID] = struct{}{}
 	}
 
 	for _, room := range se.Request.PossibleRooms {
-		if _, ignored := lookup[room.Id]; ignored {
+		if _, ignored := lookup[room.ID]; ignored {
 			continue
 		}
 
@@ -400,8 +400,8 @@ func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarE
 			return ev, true, nil
 		}
 
-		if _, exist := c.eventsByAttendee[a.Id]; exist {
-			for _, scheduled := range c.eventsByAttendee[a.Id].Scheduled {
+		if _, exist := c.eventsByAttendee[a.ID]; exist {
+			for _, scheduled := range c.eventsByAttendee[a.ID].Scheduled {
 				// TODO: This loop can be optimized. We could iterate from the
 				// end and once we are seeing events where
 				// scheduled.End.Before(se.Start) we can stop iterating.
