@@ -1,13 +1,7 @@
-github.com/MaxHalford/eaopt v0.0.0-20171128194827-6c1780700217 h1:JSbCa/NvBOh89q9hkmmzBGcwqD5W2X9rlwDfwFlLDKM=
-github.com/MaxHalford/eaopt v0.0.0-20171128194827-6c1780700217/go.mod h1:/BtsvPTut6WckNrjS1D7MQRv9IOXnPN0lnrWIqyCFQI=
 github.com/MaxHalford/eaopt v0.0.0-20191017133541-37dd3a71cb48 h1:CPvZqR9cmR0lXUX9RoGghGWkgZIu7M/V8kVkepyeKnE=
 github.com/MaxHalford/eaopt v0.0.0-20191017133541-37dd3a71cb48/go.mod h1:/BtsvPTut6WckNrjS1D7MQRv9IOXnPN0lnrWIqyCFQI=
-github.com/MaxHalford/eaopt v0.0.0-20191122194827-37dd3a71cb482d1990b40d439adbd976f27fc095 h1:kYp8mrkuXcqx/r4PR6ymd5jgaukZ40VeNElBgIlkc3Y=
-github.com/MaxHalford/eaopt v0.0.0-20191122194827-37dd3a71cb482d1990b40d439adbd976f27fc095/go.mod h1:/BtsvPTut6WckNrjS1D7MQRv9IOXnPN0lnrWIqyCFQI=
-github.com/MaxHalford/eaopt v0.1.0 h1:eeAxFfy4zEcv7AZzQCHeYGRutifxN0EA/XZzv70Uaus=
-github.com/MaxHalford/eaopt v0.1.0/go.mod h1:/BtsvPTut6WckNrjS1D7MQRv9IOXnPN0lnrWIqyCFQI=
-github.com/MaxHalford/eaopt v0.1.1-0.20171128194827-6c1780700217 h1:HEA4mpblpH8OXcIpUR/KqcaNpoKkOj1OleSOFdpmmGU=
-github.com/MaxHalford/eaopt v0.1.1-0.20171128194827-6c1780700217/go.mod h1:/BtsvPTut6WckNrjS1D7MQRv9IOXnPN0lnrWIqyCFQI=
+github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 h1:uC1QfSlInpQF+M0ao65imhwqKnz3Q2z/d8PWZRMQvDM=
+github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88/go.mod h1:3w7q1U84EfirKl04SVQ/s7nPm1ZPhiXd34z40TNz36k=
 github.com/k0kubun/pp v3.0.1+incompatible h1:3tqvf7QgUnZ5tXO6pNAZlrvHgl6DvifjDrd9g2S9Z40=
 github.com/k0kubun/pp v3.0.1+incompatible/go.mod h1:GWse8YhT0p8pT4ir3ZgBbfZild3tgzSScAn6HmfYukg=
 github.com/mattn/go-colorable v0.1.4 h1:snbPLB8fVfU9iwbbo30TPtbLRzwWu6aJS6Xh4eaaviA=
@@ -16,4 +10,5 @@ github.com/mattn/go-isatty v0.0.8 h1:HLtExJ+uU2HOZ+wI0Tt5DtUDrx8yhUqDcp7fYERX4CE
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e h1:vcxGaoTs7kV8m5Np9uUNQin4BrLOthgV7252N8V+FwY=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 h1:DH4skfRX4EBpamg7iV4ZlCpblAHI6s6TDM39bFZumv8=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
