@@ -103,14 +103,14 @@ type Calendar interface {
 	Overlap(TimeInterval) (*CalendarEvent, bool, error)
 }
 
-// RoomId is a unique id for a room.
-type RoomId string
+// RoomID is a unique id for a room.
+type RoomID string
 
 // Room is a meeting room that can be booked.
 type Room struct {
 	// Is is a unique id for a room. It is mostly needed to be able to work
 	// around the fact that Room isn't hashable and can't be stored in a map.
-	ID RoomId
+	ID RoomID
 	// Calendar is the calendar of the room.
 	Calendar Calendar
 }
@@ -340,7 +340,7 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 // over time interval ti. It also returns the earliest end timestamp for a busy
 // room which is used to know next time we should try to reschedule.
 func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room, *time.Time) {
-	m := make(map[RoomId]Room)
+	m := make(map[RoomID]Room)
 	var earliestEnd *time.Time
 	for _, event := range c.Events {
 		// TODO: This loop can be optimized. We could iterate from the end and
@@ -364,7 +364,7 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 // findAvailableRoom returns the first available room it finds which isn't being
 // used over time interval ti, and isn't part of excluded rooms.
 func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Room) (*Room, bool, error) {
-	lookup := make(map[RoomId]struct{})
+	lookup := make(map[RoomID]struct{})
 	for _, r := range excluded {
 		lookup[r.ID] = struct{}{}
 	}
