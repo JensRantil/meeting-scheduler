@@ -315,7 +315,7 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 
 		iterations++
 		if iterations > MaxIterations {
-			return errors.New("Too many iterations.")
+			return errors.New("too many iterations.")
 		}
 	}
 
