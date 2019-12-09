@@ -193,17 +193,17 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 }
 
 // ScheduleFactory generates a viable schedule candidate.
-func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
-	order := make([]int, len(c.reqs))
-	for i := 0; i < len(c.reqs); i++ {
+func (s *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
+	order := make([]int, len(s.reqs))
+	for i := 0; i < len(s.reqs); i++ {
 		order[i] = i
 	}
 	rng.Shuffle(len(order), func(i, j int) {
 		order[i], order[j] = order[j], order[i]
 	})
 	return &candidate{
-		c.earliest,
-		c.reqs,
+		s.earliest,
+		s.reqs,
 		order,
 	}
 }
