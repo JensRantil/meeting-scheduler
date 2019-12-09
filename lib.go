@@ -27,13 +27,13 @@ import (
 	"github.com/MaxHalford/eaopt"
 )
 
-// AttendeeId is a unique identifier for a meeting attendee.
-type AttendeeId string
+// AttendeeID is a unique identifier for a meeting attendee.
+type AttendeeID string
 
 // Attendee is an attendee that attends a meeting.
 type Attendee struct {
 	// Id is the unique identifier for an attendee.
-	Id AttendeeId
+	Id AttendeeID
 	// Calendar is an instance of the attendee's calendar containing previously
 	// scheduled meetings.
 	Calendar Calendar
@@ -264,7 +264,7 @@ type constructedSchedule struct {
 	// eventsByAttendee contains `ScheduledEvent`s grouped by attendee. It's
 	// used as a lookup table to more quickly be able to evaluate how well the
 	// solution performs.
-	eventsByAttendee map[AttendeeId]*attendeeEvents
+	eventsByAttendee map[AttendeeID]*attendeeEvents
 }
 
 // MaxIterations is the number of iterations we allow before we consider we are
@@ -451,7 +451,7 @@ func (c constructedSchedule) Evaluate() float64 {
 func (s *candidate) Schedule() (constructedSchedule, error) {
 	sch := constructedSchedule{
 		earliest:         s.earliest,
-		eventsByAttendee: make(map[AttendeeId]*attendeeEvents),
+		eventsByAttendee: make(map[AttendeeID]*attendeeEvents),
 	}
 	for _, event := range s.order {
 		if err := sch.Add(s.reqs[event]); err != nil {
