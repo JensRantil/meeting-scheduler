@@ -220,7 +220,7 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 		// cost for switching room or cost for using a large room with few
 		// people.
 		busyRooms, nextTimeToTry := c.findAlreadyScheduledRooms(candidate.TimeInterval)
-		room, found, err := c.findAvailableRoom(candidate, *req, busyRooms)
+		room, found, err := c.findAvailableRoom(candidate, busyRooms)
 		if err != nil {
 			return err
 		}
@@ -277,13 +277,13 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 	return rooms, earliestStart
 }
 
-func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, req ScheduleRequest, excluded []Room) (*Room, bool, error) {
+func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Room) (*Room, bool, error) {
 	lookup := make(map[RoomId]struct{})
 	for _, r := range excluded {
 		lookup[r.Id] = struct{}{}
 	}
 
-	for _, room := range req.PossibleRooms {
+	for _, room := range se.Request.PossibleRooms {
 		if _, ignored := lookup[room.Id]; ignored {
 			continue
 		}
