@@ -177,7 +177,7 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 	// TODO: Stop early if no progress is being made.
 
 	// Find the minimum
-	err = ga.Minimize(s.ScheduleFactory)
+	err = ga.Minimize(s.scheduleFactory)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 }
 
 // ScheduleFactory generates a viable schedule candidate.
-func (s *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
+func (s *Scheduler) scheduleFactory(rng *rand.Rand) eaopt.Genome {
 	order := make([]int, len(s.reqs))
 	for i := 0; i < len(s.reqs); i++ {
 		order[i] = i
