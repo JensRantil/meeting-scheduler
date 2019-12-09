@@ -123,7 +123,7 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 	// Assuming the first individual is the best -
 	// https://godoc.org/github.com/MaxHalford/eaopt#GA isn't too well
 	// documented.
-	schedule, err := ga.HallOfFame[0].Genome.(*solution).Schedule()
+	schedule, err := ga.HallOfFame[0].Genome.(*candidate).Schedule()
 	if err != nil {
 		return nil, err
 	}
@@ -139,14 +139,14 @@ func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
 	rng.Shuffle(len(order), func(i, j int) {
 		order[i], order[j] = order[j], order[i]
 	})
-	return &solution{
+	return &candidate{
 		c.earliest,
 		c.reqs,
 		order,
 	}
 }
 
-type solution struct {
+type candidate struct {
 	earliest time.Time
 	reqs     []*ScheduleRequest
 
@@ -156,25 +156,25 @@ type solution struct {
 	order []int
 }
 
-func (s *solution) Clone() eaopt.Genome {
-	return &solution{
+func (s *candidate) Clone() eaopt.Genome {
+	return &candidate{
 		s.earliest,
 		s.reqs,
 		append([]int(nil), s.order...),
 	}
 }
 
-func (s *solution) Crossover(genome eaopt.Genome, rng *rand.Rand) {
+func (s *candidate) Crossover(genome eaopt.Genome, rng *rand.Rand) {
 	// https://www.hindawi.com/journals/cin/2017/7430125/
-	eaopt.CrossCXInt(s.order, genome.(*solution).order)
+	eaopt.CrossCXInt(s.order, genome.(*candidate).order)
 }
 
-func (s *solution) Mutate(rng *rand.Rand) {
+func (s *candidate) Mutate(rng *rand.Rand) {
 	// TODO: Test to see if more mutations than 1 should be done.
 	eaopt.MutPermuteInt(s.order, 1, rng)
 }
 
-func (s *solution) Evaluate() (float64, error) {
+func (s *candidate) Evaluate() (float64, error) {
 	r, err := s.Schedule()
 	return r.Evaluate(), err
 }
@@ -354,7 +354,7 @@ func (c constructedSchedule) Evaluate() float64 {
 	return float64(score)
 }
 
-func (s *solution) Schedule() (constructedSchedule, error) {
+func (s *candidate) Schedule() (constructedSchedule, error) {
 	sch := constructedSchedule{
 		earliest:         s.earliest,
 		eventsByAttendee: make(map[AttendeeId]*attendeeEvents),

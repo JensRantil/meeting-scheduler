@@ -120,8 +120,8 @@ func TestFragmentedDayIsWorseThanNonFragmentedDay(t *testing.T) {
 	// Monday morning at 9.
 	now, _ := time.Parse("02-01-2006 15:04", "02-12-2019 09:00")
 
-	better := solution{now, reqs, []int{0, 1, 2}}
-	worse := solution{now, reqs, []int{0, 2, 1}}
+	better := candidate{now, reqs, []int{0, 1, 2}}
+	worse := candidate{now, reqs, []int{0, 2, 1}}
 
 	betterSchedule, err := better.Schedule()
 	if err != nil {
@@ -156,7 +156,7 @@ func TestSchedulingOfSolution(t *testing.T) {
 	// Monday morning at 9.
 	now, _ := time.Parse("02-01-2006 15:04", "02-12-2019 09:00")
 
-	sol := solution{
+	sol := candidate{
 		now,
 		reqs,
 		[]int{0, 1, 2},
