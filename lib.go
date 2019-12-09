@@ -257,14 +257,14 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 
 func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room, *time.Time) {
 	m := make(map[RoomId]Room)
-	var earliestStart *time.Time
+	var earliestEnd *time.Time
 	for _, event := range c.Events {
 		// TODO: This loop can be optimized. We could iterate from the end and
 		// once we are seeing events that end before ti we can stop iterating.
 
 		if event.TimeInterval.Overlaps(ti) {
-			if earliestStart == nil || event.Start.Before(*earliestStart) {
-				earliestStart = &event.End
+			if earliestEnd == nil || event.End.Before(*earliestEnd) {
+				earliestEnd = &event.End
 			}
 			m[event.Room.Id] = event.Room
 		}
@@ -274,7 +274,7 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 	for _, v := range m {
 		rooms = append(rooms, v)
 	}
-	return rooms, earliestStart
+	return rooms, earliestEnd
 }
 
 func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Room) (*Room, bool, error) {
