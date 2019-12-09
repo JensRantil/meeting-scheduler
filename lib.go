@@ -8,21 +8,27 @@ import (
 	"github.com/MaxHalford/eaopt"
 )
 
+// AttendeeId is a unique identifier for a meeting attendee.
 type AttendeeId string
 
+// Attendee is an attendee that attends a meeting.
 type Attendee struct {
+	// Id is the unique identifier for an attendee.
 	Id AttendeeId
-
+	// Calendar is an instance of the attendee's calendar containing previously
+	// scheduled meetings.
 	Calendar Calendar
 }
 
+// TimeInterval holds an interval of time.
 type TimeInterval struct {
-	// Inclusive.
+	// Inclusive. Must be strictly before End.
 	Start time.Time
-	// Exclusive.
+	// Exclusive. Must be strictly after Start.
 	End time.Time
 }
 
+// Overlaps checks if this interval overlaps with another interval.
 func (ti TimeInterval) Overlaps(ti2 TimeInterval) bool {
 	if ti.End.Before(ti2.Start) {
 		return false
@@ -39,45 +45,80 @@ func (ti TimeInterval) Overlaps(ti2 TimeInterval) bool {
 	return true
 }
 
+// ScheduledEvent is an event which has been scheduled with a fixed time and
+// rooms. It is the scheduled equivalent of a ScheduleRequest.
 type ScheduledEvent struct {
+	// TimeInterval is the time over which this event has been scheduled.
 	TimeInterval
+	// Attendees is a list of the attendees for this meeting.
 	Attendees []Attendee
-	Room      Room
-	Request   *ScheduleRequest
+	// Room is the room in which the event will take place.
+	Room Room
+	// Request is the equivalent ScheduleRequest that generated this
+	// ScheduledEvent.
+	Request *ScheduleRequest
 }
 
+// ScheduleRequest is the input the scheduling. It's a request to schedule a
+// meeting.
 type ScheduleRequest struct {
-	Length        time.Duration
-	Attendees     []Attendee
+	// Length is the requested length of the meeting.
+	Length time.Duration
+	// Attendees is a list of the attendees of the meeting.
+	Attendees []Attendee
+	// PossibleRooms is a list of the possible rooms in which the meetings can
+	// take place. If you have multiple offices you might want to limit which
+	// rooms a meeting can take place in.
 	PossibleRooms []Room
 }
 
+// CalendarEvent is an event stored in a calendar.
 type CalendarEvent struct {
 	TimeInterval
 }
 
+// Calendar is an external calendar source.
 type Calendar interface {
-	// Return a single overlapping event.
+	// Overlap checks if a TimeInterval overlaps with a preexisting event in a
+	// Calendar.
 	Overlap(TimeInterval) (*CalendarEvent, bool, error)
 }
 
+// RoomId is a unique id for a room.
 type RoomId string
 
+// Room is a meeting room that can be booked.
 type Room struct {
-	Id       RoomId
+	// Is is a unique id for a room. It is mostly needed to be able to work
+	// around the fact that Room isn't hashable and can't be stored in a map.
+	Id RoomId
+	// Calendar is the calendar of the room.
 	Calendar Calendar
 }
 
+// DefaultNGenerations is the number of generations that the genetic algorithm
+// should execute before it's done. Increase this if your scheduling problem
+// hasn't converged.
 var DefaultNGenerations uint = 500
 
+// Config is an optional configuration to a Scheduler.
 type Config func(*Scheduler)
 
+// NGenerations is an optional configuration option which changes the number of
+// iterations that the genetic algorithm does.
 func NGenerations(ngenerations uint) Config {
 	return func(c *Scheduler) {
 		c.ngenerations = ngenerations
 	}
 }
 
+// New instantiates a new meeting scheduler that tries to schedule meeting
+// requests, reqs, as close as possible to earliest which also minimizing
+// attendee calendar fragmentation (that is, an attendee has a break of 45
+// minutes between meetings).
+//
+// If you'd like your attendees to have pauses between their meetings, simulate
+// that in Calendar.Overlap.
 func New(earliest time.Time, reqs []*ScheduleRequest, options ...Config) (*Scheduler, error) {
 	s := Scheduler{
 		DefaultNGenerations,
@@ -90,12 +131,14 @@ func New(earliest time.Time, reqs []*ScheduleRequest, options ...Config) (*Sched
 	return &s, nil
 }
 
+// Scheduler is a meeting scheduler that schedules meetings.
 type Scheduler struct {
 	ngenerations uint
 	earliest     time.Time
 	reqs         []*ScheduleRequest
 }
 
+// Run executes scheduling of meetings.
 func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 	// Instantiate a GA with a GAConfig
 	ga, err := eaopt.NewDefaultGAConfig().NewGA()
@@ -130,7 +173,7 @@ func (s *Scheduler) Run() ([]ScheduledEvent, error) {
 	return schedule.Events, nil
 }
 
-// ScheduleFactory generates a viable schedule.
+// ScheduleFactory generates a viable schedule candidate.
 func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
 	order := make([]int, len(c.reqs))
 	for i := 0; i < len(c.reqs); i++ {
@@ -146,6 +189,9 @@ func (c *Scheduler) ScheduleFactory(rng *rand.Rand) eaopt.Genome {
 	}
 }
 
+// candidate is the internal representation of a schedule. A "schedule" here
+// depicts "a set of scheduled meetings". The candidate might not be the
+// optimal schedule. candidate implements `eaopt.Genome`.
 type candidate struct {
 	earliest time.Time
 	reqs     []*ScheduleRequest
@@ -156,6 +202,7 @@ type candidate struct {
 	order []int
 }
 
+// Clone makes a copy of a candidate.
 func (s *candidate) Clone() eaopt.Genome {
 	return &candidate{
 		s.earliest,
@@ -164,16 +211,20 @@ func (s *candidate) Clone() eaopt.Genome {
 	}
 }
 
+// Crossover modified this candidate based on genome. You can see it as two
+// solutions mating (and one parent, weirdly, being replaced by its child).
 func (s *candidate) Crossover(genome eaopt.Genome, rng *rand.Rand) {
 	// https://www.hindawi.com/journals/cin/2017/7430125/
 	eaopt.CrossCXInt(s.order, genome.(*candidate).order)
 }
 
+// Mutate makes random changes to this candidate.
 func (s *candidate) Mutate(rng *rand.Rand) {
 	// TODO: Test to see if more mutations than 1 should be done.
 	eaopt.MutPermuteInt(s.order, 1, rng)
 }
 
+// Evaluate evaluates how good a candidate performs. Lower is better.
 func (s *candidate) Evaluate() (float64, error) {
 	r, err := s.Schedule()
 	return r.Evaluate(), err
@@ -185,14 +236,25 @@ type attendeeEvents struct {
 	Scheduled []ScheduledEvent
 }
 
+// constructedSchedule is a solution's `ScheduledEvent`s
 type constructedSchedule struct {
-	Events           []ScheduledEvent
-	earliest         time.Time
+	// ScheduledEvent is a list of all events with actual times.
+	Events []ScheduledEvent
+	// earliest time is that same as Scheduler.earliest.
+	earliest time.Time
+	// eventsByAttendee contains `ScheduledEvent`s grouped by attendee. It's
+	// used as a lookup table to more quickly be able to evaluate how well the
+	// solution performs.
 	eventsByAttendee map[AttendeeId]*attendeeEvents
 }
 
+// MaxIterations is the number of iterations we allow before we consider we are
+// stuck in a loop trying to schedule a ScheduleRequest. The code is complex.
+// This avoids deadlock.
 const MaxIterations = 1000
 
+// Add schedules a single ScheduleRequest. It does so by starting on
+// constructedSchedule.earliest and moving forward until it find an empty slot.
 func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 	candidate := ScheduledEvent{
 		TimeInterval: TimeInterval{
@@ -255,6 +317,9 @@ func (c *constructedSchedule) Add(req *ScheduleRequest) error {
 	return nil
 }
 
+// findAlreadyScheduledRooms returns a list of rooms that are already scheduled
+// over time interval ti. It also returns the earliest end timestamp for a busy
+// room which is used to know next time we should try to reschedule.
 func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room, *time.Time) {
 	m := make(map[RoomId]Room)
 	var earliestEnd *time.Time
@@ -277,6 +342,8 @@ func (c *constructedSchedule) findAlreadyScheduledRooms(ti TimeInterval) ([]Room
 	return rooms, earliestEnd
 }
 
+// findAvailableRoom returns the first available room it finds which isn't being
+// used over time interval ti, and isn't part of excluded rooms.
 func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Room) (*Room, bool, error) {
 	lookup := make(map[RoomId]struct{})
 	for _, r := range excluded {
@@ -300,6 +367,7 @@ func (c *constructedSchedule) findAvailableRoom(se ScheduledEvent, excluded []Ro
 	return nil, false, nil
 }
 
+// findAttendeeOverlap finds the attendees which are busy during the proposed time interval.
 func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarEvent, bool, error) {
 
 	// Now we check if the user already has a meeting.
@@ -328,6 +396,7 @@ func (c *constructedSchedule) findAttendeeOverlap(se ScheduledEvent) (*CalendarE
 	return nil, false, nil
 }
 
+// latest returns the latest time among a set of times.
 func latest(a time.Time, others ...time.Time) time.Time {
 	for _, b := range others {
 		if a.Before(b) {
@@ -337,6 +406,9 @@ func latest(a time.Time, others ...time.Time) time.Time {
 	return a
 }
 
+// Evaluate evaluates how good a constructedSchedule performs. Attendees that
+// start their days late with meetings and/or attendees that have fragmented
+// days incur higher costs. That is, lower is better.
 func (c constructedSchedule) Evaluate() float64 {
 	var score time.Duration
 	for _, attendee := range c.eventsByAttendee {
@@ -354,6 +426,9 @@ func (c constructedSchedule) Evaluate() float64 {
 	return float64(score)
 }
 
+// Schedule constructs a constructedSchedule from a candidate. It does this by
+// laying out each ScheduleRequest one by one on each attendees "virtual
+// calendar".
 func (s *candidate) Schedule() (constructedSchedule, error) {
 	sch := constructedSchedule{
 		earliest:         s.earliest,
